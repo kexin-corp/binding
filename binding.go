@@ -301,16 +301,17 @@ func mapForm(formStruct reflect.Value, form map[string][]string,
 // invokes this automatically for convenience.
 func ErrorHandler(errs Errors, resp http.ResponseWriter) {
 	if len(errs) > 0 {
-		resp.Header().Set("Content-Type", jsonContentType)
-		if errs.Has(DeserializationError) {
-			resp.WriteHeader(http.StatusBadRequest)
-		} else if errs.Has(ContentTypeError) {
-			resp.WriteHeader(http.StatusUnsupportedMediaType)
-		} else {
-			resp.WriteHeader(StatusUnprocessableEntity)
-		}
-		errOutput, _ := json.Marshal(errs)
-		resp.Write(errOutput)
+		//resp.Header().Set("Content-Type", jsonContentType)
+		//if errs.Has(DeserializationError) {
+		//	resp.WriteHeader(http.StatusBadRequest)
+		//} else if errs.Has(ContentTypeError) {
+		//	resp.WriteHeader(http.StatusUnsupportedMediaType)
+		//} else {
+		//	resp.WriteHeader(StatusUnprocessableEntity)
+		//}
+		//errOutput, _ := json.Marshal(errs)
+		//resp.Write(errOutput)
+		http.Error(resp, "", http.StatusBadRequest)
 		return
 	}
 }
