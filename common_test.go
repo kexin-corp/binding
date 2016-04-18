@@ -4,7 +4,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/go-martini/martini"
+	"github.com/codinl/martini"
 )
 
 // These types are mostly contrived examples, but they're used

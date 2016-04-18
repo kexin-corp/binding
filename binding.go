@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-martini/martini"
+	"github.com/codinl/martini"
 )
 
 /*

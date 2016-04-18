@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-martini/martini"
+	"github.com/codinl/martini"
 )
 
 var fileTestCases = []fileTestCase{

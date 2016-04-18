@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-martini/martini"
+	"github.com/codinl/martini"
 )
 
 // When binding from Form data, testing the type of data to bind
