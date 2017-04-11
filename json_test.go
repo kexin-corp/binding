@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/codinl/martini"
+	"github.com/kexin-corp/martini"
 )
 
 var jsonTestCases = []jsonTestCase{

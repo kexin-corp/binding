@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/codinl/martini"
+	"github.com/kexin-corp/martini"
 )
 
 var multipartFormTestCases = []multipartFormTestCase{

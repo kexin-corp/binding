@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/codinl/martini"
+	"github.com/kexin-corp/martini"
 )
 
 // When binding from Form data, testing the type of data to bind
