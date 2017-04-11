@@ -5,14 +5,14 @@ package binding
 
 import (
 	"encoding/json"
+	"github.com/kexin-corp/martini"
+	"github.com/kexin-corp/validator"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/kexin-corp/martini"
 )
 
 /*
@@ -170,17 +170,21 @@ func Validate(obj interface{}) martini.Handler {
 				e := v.Index(i).Interface()
 				errors = validateStruct(errors, e)
 
-				if validator, ok := e.(Validator); ok {
-					errors = validator.Validate(errors, req)
+				//if validator, ok := e.(Validator); ok {
+				//	errors = validator.Validate(errors, req)
+				//}
+
+				if len(errors) > 0 {
+					break
 				}
 			}
 		} else {
 
 			errors = validateStruct(errors, obj)
 
-			if validator, ok := obj.(Validator); ok {
-				errors = validator.Validate(errors, req)
-			}
+			//if validator, ok := obj.(Validator); ok {
+			//	errors = validator.Validate(errors, req)
+			//}
 		}
 		context.Map(errors)
 	}
@@ -188,45 +192,54 @@ func Validate(obj interface{}) martini.Handler {
 
 // Performs required field checking on a struct
 func validateStruct(errors Errors, obj interface{}) Errors {
-	typ := reflect.TypeOf(obj)
-	val := reflect.ValueOf(obj)
+	//logger.Printf("obj=%#v\n", obj)
 
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-		val = val.Elem()
-	}
-
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-
-		// Skip ignored and unexported fields in the struct
-		if field.Tag.Get("form") == "-" || !val.Field(i).CanInterface() {
-			continue
-		}
-
-		fieldValue := val.Field(i).Interface()
-		zero := reflect.Zero(field.Type).Interface()
-
-		// Validate nested and embedded structs (if pointer, only do so if not nil)
-		if field.Type.Kind() == reflect.Struct ||
-			(field.Type.Kind() == reflect.Ptr && !reflect.DeepEqual(zero, fieldValue) &&
-				field.Type.Elem().Kind() == reflect.Struct) {
-			errors = validateStruct(errors, fieldValue)
-		}
-
-		if strings.Index(field.Tag.Get("binding"), "required") > -1 {
-			if reflect.DeepEqual(zero, fieldValue) {
-				name := field.Name
-				if j := field.Tag.Get("json"); j != "" {
-					name = j
-				} else if f := field.Tag.Get("form"); f != "" {
-					name = f
-				}
-				errors.Add([]string{name}, RequiredError, "Required")
-			}
-		}
+	err := validator.Validate(obj)
+	if err != nil {
+		errors = append(errors, Error{Message: err.Error()})
 	}
 	return errors
+	/*
+		typ := reflect.TypeOf(obj)
+		val := reflect.ValueOf(obj)
+
+		if typ.Kind() == reflect.Ptr {
+			typ = typ.Elem()
+			val = val.Elem()
+		}
+
+		for i := 0; i < typ.NumField(); i++ {
+			field := typ.Field(i)
+
+			// Skip ignored and unexported fields in the struct
+			if field.Tag.Get("form") == "-" || !val.Field(i).CanInterface() {
+				continue
+			}
+
+			fieldValue := val.Field(i).Interface()
+			zero := reflect.Zero(field.Type).Interface()
+
+			// Validate nested and embedded structs (if pointer, only do so if not nil)
+			if field.Type.Kind() == reflect.Struct ||
+				(field.Type.Kind() == reflect.Ptr && !reflect.DeepEqual(zero, fieldValue) &&
+					field.Type.Elem().Kind() == reflect.Struct) {
+				errors = validateStruct(errors, fieldValue)
+			}
+
+			if strings.Index(field.Tag.Get("binding"), "required") > -1 {
+				if reflect.DeepEqual(zero, fieldValue) {
+					name := field.Name
+					if j := field.Tag.Get("json"); j != "" {
+						name = j
+					} else if f := field.Tag.Get("form"); f != "" {
+						name = f
+					}
+					errors.Add([]string{name}, RequiredError, "Required")
+				}
+			}
+		}
+		return errors
+	*/
 }
 
 // Takes values from the form data and puts them into a struct
@@ -299,18 +312,19 @@ func mapForm(formStruct reflect.Value, form map[string][]string,
 // This is a "default" handler, of sorts, and you are
 // welcome to use your own instead. The Bind middleware
 // invokes this automatically for convenience.
-func ErrorHandler(errs Errors, resp http.ResponseWriter) {
+func ErrorHandler(errs Errors, req *http.Request, resp http.ResponseWriter) {
 	if len(errs) > 0 {
-		//resp.Header().Set("Content-Type", jsonContentType)
-		//if errs.Has(DeserializationError) {
-		//	resp.WriteHeader(http.StatusBadRequest)
-		//} else if errs.Has(ContentTypeError) {
-		//	resp.WriteHeader(http.StatusUnsupportedMediaType)
-		//} else {
-		//	resp.WriteHeader(StatusUnprocessableEntity)
-		//}
-		//errOutput, _ := json.Marshal(errs)
-		//resp.Write(errOutput)
+
+		for _, e := range errs {
+			var url string
+			if req != nil {
+				url = req.URL.String()
+			}
+			Errorf("%s:%s\n", url, e.Message)
+			http.Error(resp, e.Message, http.StatusBadRequest)
+			return
+		}
+
 		http.Error(resp, "", http.StatusBadRequest)
 		return
 	}

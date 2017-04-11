@@ -118,7 +118,7 @@ func TestErrorHandler(t *testing.T) {
 func performErrorTest(t *testing.T, testCase errorTestCase) {
 	httpRecorder := httptest.NewRecorder()
 
-	ErrorHandler(testCase.errors, httpRecorder)
+	ErrorHandler(testCase.errors, nil, httpRecorder)
 
 	actualBody, _ := ioutil.ReadAll(httpRecorder.Body)
 	actualContentType := httpRecorder.Header().Get("Content-Type")
