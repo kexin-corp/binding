@@ -7,9 +7,9 @@ Request data binding and validation for Martini.
 
 ## Usage
 
-现在已改成使用[validator](https://github.com/kexin-corp/validator)进行数据校验
+为了适应具有中国特色的参数格式，已改成使用[validator](https://github.com/kexin-corp/validator)进行数据校验
 
-#### Getting form data from a request
+#### 你的request可以这样写
 
 ```go
 type User struct {
