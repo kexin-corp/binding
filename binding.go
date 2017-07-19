@@ -22,6 +22,13 @@ import (
 		One func to bring them all,
 		And in this package BIND them.
 */
+type HttpErrorHandler func(Errors, *http.Request, http.ResponseWriter)
+
+var IngressErrorHandler HttpErrorHandler = ErrorHandler
+
+func SetErrorHandler(handler HttpErrorHandler) {
+	IngressErrorHandler = handler
+}
 
 // Bind wraps up the functionality of the Form and Json middleware
 // according to the Content-Type and verb of the request.
@@ -55,7 +62,7 @@ func Bind(obj interface{}, ifacePtr ...interface{}) martini.Handler {
 			context.Invoke(Form(obj, ifacePtr...))
 		}
 
-		context.Invoke(ErrorHandler)
+		context.Invoke(IngressErrorHandler)
 	}
 }
 
